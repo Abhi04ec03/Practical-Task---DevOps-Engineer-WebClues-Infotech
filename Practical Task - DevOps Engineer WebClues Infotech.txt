@@ -1,0 +1,45 @@
+Task 1: Simple Node Js Application Deployment on Docker container
+
+FROM node: 16.17.0-alpine AS container
+WORKDIR /app
+COPY ..
+RUN npm install
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=container /app/build /usr/share/nginx/html
+
+EXPOSE 3000
+
+Commands:
+docker build -t nodejsapp:latest .
+docker run -d -p 8080:3000 nodejsapp:latest
+
+
+Task 2: K8s App restrictions over network
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: my-app-network-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: my-app-deployment  
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        
+        - podSelector: {}
+    - from:
+        
+        - podSelector:
+            matchLabels:
+              app: trusted
+  egress:
+    - to:
+        
+        - podSelector: {}
